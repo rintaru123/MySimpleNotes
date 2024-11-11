@@ -4,6 +4,7 @@ from tkcalendar import Calendar
 import sqlite3
 from datetime import datetime
 from tkinter import ttk
+from configparser import ConfigParser
 
 # Creating the DataBase
 conn = sqlite3.connect('notes.db')
@@ -51,7 +52,7 @@ def update_note():
         load_notes(date)
 
     except IndexError:
-        messagebox.showwarning("Error", "Choose a note.")
+        messagebox.showwarning(error_name, error_name2)
 
 def delete_note():
     try:
@@ -62,7 +63,7 @@ def delete_note():
         load_notes(date)
         text_area.delete("1.0", tk.END)
     except IndexError:
-        messagebox.showwarning("Error", "Choose a note.")
+        messagebox.showwarning(error_name, error_name2)
 
 def export_current():
     try:
@@ -72,7 +73,7 @@ def export_current():
         with open(f'note_{note[0]}.txt', 'w') as file:
             file.write(f"Date: {note[1]}\nContent:\n{note[2]}")
     except IndexError:
-        messagebox.showwarning("Error", "Choose a note.")
+        messagebox.showwarning(error_name, error_name2)
         
 def export_all():
     cursor.execute('SELECT * FROM notes')
@@ -82,102 +83,16 @@ def export_all():
             file.write(f"ID: {note[0]}, Date: {note[1]}\n{note[2]}\n\n")
 
 def on_enter(e):
-    myButton1['highlightbackground'] = "white"
+    myButton1['highlightbackground'] = text_background_color
     myButton1['highlightthickness'] = 2
     myButton1['bd']=0
-    e['background'] = 'green'
+    e['background'] = special_color
 
 def on_leave(e):
-    myButton1['highlightbackground'] = "white"
+    myButton1['highlightbackground'] = text_background_color
     myButton1['highlightthickness'] = 2
     myButton1['bd']=0
-    e['background'] = '#282828'
-
-# GUI
-
-root = tk.Tk()
-root.geometry("1000x345")
-
-root.title("Notes App")
-root.option_add('*Font', 'Calibri 10')
-root.configure(bg="#292929")
-root.attributes("-toolwindow", True)
-root.resizable("true","false")
-style=ttk.Style()
-style.theme_use('clam')
-
-
-frame = Frame(root,bg="white")
-frame.pack(side=tk.LEFT,anchor="sw")
-
-listbox = Listbox(root,bg="#292929",fg="white",relief="flat",borderwidth=0, highlightthickness=0,selectbackground="green")
-listbox.pack(side=tk.LEFT,fill=tk.Y,ipadx=20,anchor="nw",padx=10)
-
-calendar = Calendar(frame, date_pattern="dd.mm.Y",locale='en_US',
-    background="#292929",
-    foreground="#E6E6E6",
-    disabledbackground ="#292929",
-    disabledforeground="#E6E6E6",
-    bordercolor="#434343",
-    headersbackground="#030303",
-    headersforeground="#E6E6E6",
-    selectbackground="green",
-    selectforeground="white",
-    disabledselectbackground="#292929",
-    disabledselectforeground="#E6E6E6",
-    normalbackground="#494949",
-    normalforeground="#E6E6E6",
-    weekendbackground="#494949",
-    weekendforeground="#E6E6E6",
-    othermonthbackground="#292929",
-    othermonthforeground="#E6E6E6",
-    othermonthwebackground="#292929",
-    othermonthweforeground="#E6E6E6",
-    disableddaybackground="#292929",
-    disableddayforeground="#E6E6E6",    
-                    )
-calendar.bind("<<CalendarSelected>>",lambda event:load_notes(calendar.get_date()))
-calendar.pack()
-
-
-myButton1=tk.Button(frame, text="Make a new note", command=save_note,bg="#282828",fg="#E6E6E6",highlightbackground = "black",highlightthickness = 2, bd=0)
-myButton1.bind("<Enter>",lambda event:on_enter(myButton1))
-myButton1.bind("<Leave>",lambda event:on_leave(myButton1))
-myButton1.pack(fill=tk.X, expand="true",anchor="sw")
-
-myButton2=tk.Button(frame, text="Show all notes", command=load_all_notes,bg="#282828",fg="#E6E6E6",highlightbackground = "black",highlightthickness = 2, bd=0)
-myButton2.bind("<Enter>",lambda event:on_enter(myButton2))
-myButton2.bind("<Leave>",lambda event:on_leave(myButton2))
-myButton2.pack(fill=tk.X, expand="true",anchor="sw")
-
-myButton3=tk.Button(frame, text="Delete", command=delete_note,bg="#282828",fg="#E6E6E6",highlightbackground = "black",highlightthickness = 2, bd=0)
-myButton3.bind("<Enter>",lambda event:on_enter(myButton3))
-myButton3.bind("<Leave>",lambda event:on_leave(myButton3))
-myButton3.pack(fill=tk.X, expand="true")
-
-myButton4=tk.Button(frame, text="Save", command=update_note,bg="#282828",fg="#E6E6E6",highlightbackground = "black",highlightthickness = 2, bd=0)
-myButton4.bind("<Enter>",lambda event:on_enter(myButton4))
-myButton4.bind("<Leave>",lambda event:on_leave(myButton4))
-myButton4.pack(fill=tk.X, expand="true")
-
-myButton5=tk.Button(frame, text="Export current note", command=export_current,bg="#282828",fg="#E6E6E6",highlightbackground = "black",highlightthickness = 2, bd=0)
-myButton5.bind("<Enter>",lambda event:on_enter(myButton5))
-myButton5.bind("<Leave>",lambda event:on_leave(myButton5))
-myButton5.pack(fill=tk.X, expand="true")
-
-myButton6=tk.Button(frame, text="Export all notes", command=export_all,bg="#282828",fg="#E6E6E6",highlightbackground = "black",highlightthickness = 2, bd=0)
-myButton6.bind("<Enter>",lambda event:on_enter(myButton6))
-myButton6.bind("<Leave>",lambda event:on_leave(myButton6))
-myButton6.pack(fill=tk.X, expand="true")
-
-
-    
-
-
-text_area = tk.Text(root,bg="#333333",fg="#E6E6E6",relief="flat",font = ("Calibri", 11),wrap="word",insertbackground="white")
-text_area.pack(fill=tk.BOTH, expand="true",anchor="e",padx=5, pady=5,ipadx=10)
-listbox.bind("<<ListboxSelect>>", lambda event: load_selected_note())
-load_notes(calendar.get_date())
+    e['background'] = main_background_color
 
 def load_selected_note():
     try:
@@ -190,10 +105,112 @@ def load_selected_note():
             calendar.selection_set(note[1])
 
     except IndexError:
-        messagebox.showwarning("Error", "Please Choose a note.")
+        messagebox.showwarning(error_name, error_name2)
         pass
 
-root.mainloop()
+#reading config
+config = ConfigParser()
+config.read("config.ini")
 
+language = config.get("LOCALE", "language")  # устанавливаем локаль
+language_section = language.upper()
+
+config.read("locales/{}.ini".format(language),encoding='utf-8')
+
+calendar_locale=config.get(language_section, "cal_locale")
+error_name=config.get(language_section, "error_k")
+error_name2=config.get(language_section, "error_k2")
+button_save=config.get(language_section, "saveButton")
+button_new_note=config.get(language_section, "newNoteButton")
+button_show_all_notes=config.get(language_section,"showAllNotes")
+button_delete=config.get(language_section,'deleteButton')
+button_export_current_note=config.get(language_section,'exportCurrentNote')
+button_export_all_notes=config.get(language_section,'exportAllNotes')
+main_background_color=config.get("Settings","mainBackgroundColor")
+second_background_color=config.get("Settings","secondBackgroundColor")
+text_background_color=config.get("Settings","textBackgroundColor")
+special_color=config.get("Settings","specialColor")
+
+# GUI
+root = tk.Tk()
+root.geometry("1000x345")
+
+root.title("My Simple Notes")
+root.option_add('*Font', 'Calibri 10')
+root.configure(bg=main_background_color)
+root.attributes("-toolwindow", True)
+root.resizable("true","false")
+style=ttk.Style()
+style.theme_use('clam')
+
+frame = Frame(root,bg=text_background_color)
+frame.pack(side=tk.LEFT,anchor="sw")
+
+listbox = Listbox(root,bg=main_background_color,fg=text_background_color,relief="flat",borderwidth=0, highlightthickness=0,selectbackground=special_color)
+listbox.pack(side=tk.LEFT,fill=tk.Y,ipadx=20,anchor="nw",padx=10)
+
+calendar = Calendar(frame, date_pattern="dd.mm.Y",locale=calendar_locale,
+    background=main_background_color,
+    foreground=text_background_color,
+    disabledbackground =main_background_color,
+    disabledforeground=text_background_color,
+    bordercolor="#434343",
+    headersbackground="#030303",
+    headersforeground=text_background_color,
+    selectbackground=special_color,
+    selectforeground=text_background_color,
+    disabledselectbackground=main_background_color,
+    disabledselectforeground=text_background_color,
+    normalbackground=second_background_color,
+    normalforeground=text_background_color,
+    weekendbackground=second_background_color,
+    weekendforeground=text_background_color,
+    othermonthbackground=main_background_color,
+    othermonthforeground=text_background_color,
+    othermonthwebackground=main_background_color,
+    othermonthweforeground=text_background_color,
+    disableddaybackground=main_background_color,
+    disableddayforeground=text_background_color,    
+                    )
+calendar.bind("<<CalendarSelected>>",lambda event:load_notes(calendar.get_date()))
+calendar.pack()
+
+
+myButton1=tk.Button(frame, text=button_new_note, command=save_note,bg="#282828",fg=text_background_color, highlightbackground ="black",highlightthickness = 2, bd=0)
+myButton1.bind("<Enter>",lambda event:on_enter(myButton1))
+myButton1.bind("<Leave>",lambda event:on_leave(myButton1))
+myButton1.pack(fill=tk.X, expand="true",anchor="sw")
+
+myButton2=tk.Button(frame, text=button_show_all_notes, command=load_all_notes,bg="#282828",fg=text_background_color, highlightbackground = "black",highlightthickness = 2, bd=0)
+myButton2.bind("<Enter>",lambda event:on_enter(myButton2))
+myButton2.bind("<Leave>",lambda event:on_leave(myButton2))
+myButton2.pack(fill=tk.X, expand="true",anchor="sw")
+
+myButton3=tk.Button(frame, text=button_delete, command=delete_note,bg="#282828",fg=text_background_color, highlightbackground = "black",highlightthickness = 2, bd=0)
+myButton3.bind("<Enter>",lambda event:on_enter(myButton3))
+myButton3.bind("<Leave>",lambda event:on_leave(myButton3))
+myButton3.pack(fill=tk.X, expand="true")
+
+myButton4=tk.Button(frame, text=button_save, command=update_note,bg="#282828",fg=text_background_color,highlightbackground = "black",highlightthickness = 2, bd=0)
+myButton4.bind("<Enter>",lambda event:on_enter(myButton4))
+myButton4.bind("<Leave>",lambda event:on_leave(myButton4))
+myButton4.pack(fill=tk.X, expand="true")
+
+myButton5=tk.Button(frame, text=button_export_current_note, command=export_current,bg="#282828",fg=text_background_color,highlightbackground = "black",highlightthickness = 2, bd=0)
+myButton5.bind("<Enter>",lambda event:on_enter(myButton5))
+myButton5.bind("<Leave>",lambda event:on_leave(myButton5))
+myButton5.pack(fill=tk.X, expand="true")
+
+myButton6=tk.Button(frame, text=button_export_all_notes, command=export_all,bg="#282828",fg=text_background_color,highlightbackground = "black",highlightthickness = 2, bd=0)
+myButton6.bind("<Enter>",lambda event:on_enter(myButton6))
+myButton6.bind("<Leave>",lambda event:on_leave(myButton6))
+myButton6.pack(fill=tk.X, expand="true")
+
+text_area = tk.Text(root,bg="#333333",fg=text_background_color,relief="flat",font = ("Calibri", 11),wrap="word",insertbackground=text_background_color)
+text_area.pack(fill=tk.BOTH, expand="true",anchor="e",padx=5, pady=5,ipadx=10)
+listbox.bind("<<ListboxSelect>>", lambda event: load_selected_note())
+load_notes(calendar.get_date())
+
+root.mainloop()
 conn.close()
 
